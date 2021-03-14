@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
@@ -16,6 +15,7 @@ public class CurrentRate {
     Double rate;
 
     public JSONObject getJsonFromURL(String url) throws IOException {
+        //get url and convert its components to json object
         InputStream inputStream = new URL(url).openStream();
         JSONObject json = new JSONObject();
         try {
@@ -32,19 +32,23 @@ public class CurrentRate {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        //return json file to work with
         return json;
     }
 
     public void setRate(String url) throws IOException, JSONException {
+        //get specific rate from json object
         JSONObject jsonObject = getJsonFromURL(url);
-
         this.rate = jsonObject.getJSONArray("rates").getJSONObject(0).getDouble("mid");
     }
 
     public Double calculate(int choice, String amount) {
-
+        //calculate rate depending on choice
+        //1st is BGP to PLN, 2nd is PLN to GBP
         Double amountToCalculate = 0.0, calculatedAmount = 0.0;
         amountToCalculate = Double.parseDouble(amount);
+
+        //throws exception when user gives negative number
         if (amountToCalculate < 0) throw new NumberFormatException();
 
         if (rate!=0.0) {

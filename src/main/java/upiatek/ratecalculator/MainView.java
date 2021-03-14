@@ -11,7 +11,6 @@ import com.vaadin.flow.router.Route;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Route
@@ -22,10 +21,12 @@ public class MainView extends VerticalLayout {
     CurrentRate currentRate;
 
     public MainView() throws IOException, JSONException {
+        //set default UI view
         setSizeFull();
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         setMargin(true);
 
+        //set url for current rate
         currentRate = new CurrentRate();
         currentRate.setRate("http://api.nbp.pl/api/exchangerates/rates/a/gbp/?format=json");
 
@@ -34,44 +35,8 @@ public class MainView extends VerticalLayout {
         calculateReceiveLayout();
     }
 
-    private void calculateSendLayout() {
-        AtomicReference<String> value = new AtomicReference<>("");
-        sendLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-            value.set(sendLabel.getValue());
-            try {
-                if (!String.valueOf(value).isEmpty()) {
-                    Double.parseDouble(String.valueOf(value));
-                    Double amount = 0.0;
-                    amount = currentRate.calculate(1, String.valueOf(value));
-                    receiveLabel.setValue(String.valueOf(amount));
-                }
-            } catch (NumberFormatException e) {
-                dialogPopup();
-            }
-
-        });
-
-    }
-
-    private void calculateReceiveLayout() {
-        AtomicReference<String> value = new AtomicReference<>("");
-        receiveLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-            value.set(receiveLabel.getValue());
-            try {
-                if (!String.valueOf(value).isEmpty()) {
-                    Double.parseDouble(String.valueOf(value));
-                    Double amount = 0.0;
-                    amount = currentRate.calculate(2, String.valueOf(value));
-                    sendLabel.setValue(String.valueOf(amount));
-                }
-            } catch (NumberFormatException e) {
-                dialogPopup();
-            }
-        });
-
-    }
-
-    public void setupComponents() { //sets up all the UI components
+    public void setupComponents() {
+        //sets up all the UI components
         HorizontalLayout sendLayout = new HorizontalLayout();
         sendLayout.setAlignItems(Alignment.BASELINE);
         sendLabel = new TextField("You send");
@@ -106,6 +71,7 @@ public class MainView extends VerticalLayout {
     }
 
     public void dialogPopup() {
+        //create dialog in case of incorrect input
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         Dialog dialog = new Dialog();
         dialog.open();
@@ -118,7 +84,46 @@ public class MainView extends VerticalLayout {
                 new Button("Close", event -> {
                     dialog.close();
                 }));
+        //clear both text fields
         sendLabel.clear();
         receiveLabel.clear();
+    }
+
+    private void calculateSendLayout() {
+        //get value from text field and calculate rate
+        //choice 1 - calculate GBP to PLN
+        AtomicReference<String> value = new AtomicReference<>("");
+        sendLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
+            value.set(sendLabel.getValue());
+            try {
+                if (!String.valueOf(value).isEmpty()) {
+                    Double.parseDouble(String.valueOf(value));
+                    Double amount = 0.0;
+                    amount = currentRate.calculate(1, String.valueOf(value));
+                    receiveLabel.setValue(String.valueOf(amount));
+                }
+            } catch (NumberFormatException e) {
+                dialogPopup();
+            }
+        });
+    }
+
+    private void calculateReceiveLayout() {
+        //get value from text field and calculate rate
+        //choice 2 - calculate PLN to GBP
+        AtomicReference<String> value = new AtomicReference<>("");
+        receiveLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
+            value.set(receiveLabel.getValue());
+            try {
+                if (!String.valueOf(value).isEmpty()) {
+                    Double.parseDouble(String.valueOf(value));
+                    Double amount = 0.0;
+                    amount = currentRate.calculate(2, String.valueOf(value));
+                    sendLabel.setValue(String.valueOf(amount));
+                }
+            } catch (NumberFormatException e) {
+                dialogPopup();
+            }
+        });
     }
 }
