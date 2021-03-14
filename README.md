@@ -24,7 +24,8 @@ This project can be run either in Java IDE (Eclipse EE, NetBeans IDE, IntelliJ I
 $ mvn compile
 $ npm install
 $ npm start
-$ javac <path_to_java_project_folder>\rate-calculator\src\main\java\upiatek\ratecalculator\RateCalculatorApplication.java
+$ cd  <path_to_java_project_folder>\rate-calculator\src\main\java\upiatek\ratecalculator\
+$ javac RateCalculatorApplication.java
 $ java RateCalculatorApplication.class
 
 ```
