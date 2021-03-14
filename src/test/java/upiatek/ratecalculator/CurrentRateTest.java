@@ -13,6 +13,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class CurrentRateTest {
 
     CurrentRate currentRate;
+    private static final String PREVIOUS_RATE_URL = "http://api.nbp.pl/api/exchangerates/rates/a/gbp/2012-01-02/?format=json";
+    private static final String CURRENT_RATE_URL = "http://api.nbp.pl/api/exchangerates/rates/a/gbp/?format=json";
+    private static final String INVALID_RATES_URL = "http://api.nbp.pl/api/cenyzlota/?format=json";
 
     @BeforeEach
     void setup() {
@@ -21,52 +24,44 @@ class CurrentRateTest {
 
     @Test
     void notNullJsonFromURL() throws IOException {
-        assertNotNull(currentRate.getJsonFromURL("http://api.nbp.pl/api/exchangerates/rates/a/gbp/?format=json"));
-    }
-
-    @Test
-    void notJsonFromURL() throws IOException {
-        Exception exception = assertThrows(MalformedURLException.class, () -> currentRate.getJsonFromURL("not_url"));
-        String expectedMessage = "no protocol: not_url";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
+        assertNotNull(currentRate.getJsonFromURL(CURRENT_RATE_URL));
     }
 
     @Test
     void setRateCorrectResult() throws IOException, JSONException {
-        currentRate.setRate("http://api.nbp.pl/api/exchangerates/rates/a/gbp/2012-01-02/?format=json");
-        assertEquals(5.3480, currentRate.rate);
+        currentRate.setRate(PREVIOUS_RATE_URL);
+        assertEquals(5.3480, currentRate.getRate());
     }
 
     @Test
-    void setRateException() throws IOException, JSONException {
-        Exception exception = assertThrows(JSONException.class, () -> currentRate.setRate("http://api.nbp.pl/api/cenyzlota/?format=json"));
+    void setRateException() {
+        Exception exception = assertThrows(JSONException.class, () -> currentRate.setRate(INVALID_RATES_URL));
         String expectedMessage = "No value for rates";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
-    void calculateGBPtoPLNCorrect() {
-        currentRate.rate = 1.51;
-        assertEquals(30.2, currentRate.calculate(1, "20"));
+    void calculateGBPtoPLNCorrect() throws IOException, JSONException {
+        currentRate.setRate(PREVIOUS_RATE_URL);
+        assertEquals(106.96, currentRate.calculate(1, 20.0));
     }
 
     @Test
-    void calculatePLNtoGBPCorrect() {
-        currentRate.rate = 1.51;
-        assertEquals(13.245033112582782, currentRate.calculate(2, "20"));
+    void calculatePLNtoGBPCorrect() throws IOException, JSONException {
+        currentRate.setRate(PREVIOUS_RATE_URL);
+        assertEquals(3.7397157816005984, currentRate.calculate(2, 20.0));
     }
 
     @Test
-    void calculateGBPtoPLNIncorrect() {
-        currentRate.rate = 11.0;
-        assertEquals(-1.0, currentRate.calculate(0, "1"));
+    void calculateGBPtoPLNIncorrect() throws IOException, JSONException {
+        currentRate.setRate(PREVIOUS_RATE_URL);
+        assertEquals(-1.0, currentRate.calculate(0, 2.0));
     }
 
     @Test
-    void calculatePLNtoGBPIncorrect() {
-        currentRate.rate = 11.0;
-        assertEquals(-1.0, currentRate.calculate(0, "1"));
+    void calculatePLNtoGBPIncorrect() throws IOException, JSONException {
+        currentRate.setRate(PREVIOUS_RATE_URL);
+        assertEquals(-1.0, currentRate.calculate(0, 1.0));
     }
 }

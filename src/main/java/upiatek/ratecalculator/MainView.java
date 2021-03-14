@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Route
 public class MainView extends VerticalLayout {
 
-    TextField sendLabel;
-    TextField receiveLabel;
+    TextField gbpTextField;
+    TextField plnTextField;
     CurrentRate currentRate;
 
     public MainView() throws IOException, JSONException {
@@ -35,11 +35,12 @@ public class MainView extends VerticalLayout {
         calculateReceiveLayout();
     }
 
-    public void setupComponents() {
+    private void setupComponents() {
         //sets up all the UI components
         HorizontalLayout sendLayout = new HorizontalLayout();
         sendLayout.setAlignItems(Alignment.BASELINE);
-        sendLabel = new TextField("You send");
+        gbpTextField = new TextField("You send");
+        gbpTextField.setId("gbp");
         Image ukFlag = new Image("https://cdn.countryflags.com/thumbs/united-kingdom/flag-3d-250.png", "UKFlag");
         ukFlag.setWidth("60px");
         ukFlag.setHeight("30px");
@@ -47,13 +48,13 @@ public class MainView extends VerticalLayout {
         currencyGBP.setValue("GBP");
         currencyGBP.setWidth("60px");
         currencyGBP.setReadOnly(true);
-        sendLayout.add(ukFlag, sendLabel, currencyGBP);
+        sendLayout.add(ukFlag, gbpTextField, currencyGBP);
         add(sendLayout);
 
         HorizontalLayout receiveLayout = new HorizontalLayout();
         receiveLayout.setAlignItems(Alignment.BASELINE);
-        receiveLabel = new TextField();
-        receiveLabel.setLabel("They receive");
+        plnTextField = new TextField("They receive");
+        plnTextField.setId("pln");
         Image polandFlag = new Image("https://cdn.countryflags.com/thumbs/poland/flag-3d-250.png", "PolandFlag");
         polandFlag.setWidth("60px");
         polandFlag.setHeight("30px");
@@ -61,16 +62,16 @@ public class MainView extends VerticalLayout {
         currencyPLN.setValue("PLN");
         currencyPLN.setWidth("60px");
         currencyPLN.setReadOnly(true);
-        receiveLayout.add(polandFlag, receiveLabel, currencyPLN);
+        receiveLayout.add(polandFlag, plnTextField, currencyPLN);
         add(receiveLayout);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        Text text = new Text("1 GBP = " + currentRate.rate + " PLN");
+        Text text = new Text("1 GBP = " + currentRate.getRate() + " PLN");
         horizontalLayout.add(text);
         add(horizontalLayout);
     }
 
-    public void dialogPopup() {
+    private void dialogPopup() {
         //create dialog in case of incorrect input
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         Dialog dialog = new Dialog();
@@ -85,45 +86,35 @@ public class MainView extends VerticalLayout {
                     dialog.close();
                 }));
         //clear both text fields
-        sendLabel.clear();
-        receiveLabel.clear();
+        gbpTextField.clear();
+        plnTextField.clear();
     }
 
     private void calculateSendLayout() {
         //get value from text field and calculate rate
         //choice 1 - calculate GBP to PLN
-        AtomicReference<String> value = new AtomicReference<>("");
-        sendLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-            value.set(sendLabel.getValue());
-            try {
-                if (!String.valueOf(value).isEmpty()) {
-                    Double.parseDouble(String.valueOf(value));
-                    Double amount = 0.0;
-                    amount = currentRate.calculate(1, String.valueOf(value));
-                    receiveLabel.setValue(String.valueOf(amount));
-                }
-            } catch (NumberFormatException e) {
-                dialogPopup();
-            }
+        gbpTextField.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
+            calculateFromTextField(gbpTextField.getValue(), 1, plnTextField);
         });
     }
 
     private void calculateReceiveLayout() {
         //get value from text field and calculate rate
         //choice 2 - calculate PLN to GBP
-        AtomicReference<String> value = new AtomicReference<>("");
-        receiveLabel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-            value.set(receiveLabel.getValue());
-            try {
-                if (!String.valueOf(value).isEmpty()) {
-                    Double.parseDouble(String.valueOf(value));
-                    Double amount = 0.0;
-                    amount = currentRate.calculate(2, String.valueOf(value));
-                    sendLabel.setValue(String.valueOf(amount));
-                }
-            } catch (NumberFormatException e) {
-                dialogPopup();
-            }
+        plnTextField.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
+            calculateFromTextField(plnTextField.getValue(), 2, gbpTextField);
         });
+    }
+
+    private void calculateFromTextField(String value, int i, TextField textField) {
+        try {
+            if (!value.isEmpty()) {
+                value = value.replaceAll("-", "");
+                Double amount = currentRate.calculate(i, Double.parseDouble(value));
+                textField.setValue(String.valueOf(amount));
+            }
+        } catch (NumberFormatException e) {
+            dialogPopup();
+        }
     }
 }
