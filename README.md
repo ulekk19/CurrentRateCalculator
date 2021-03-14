@@ -24,10 +24,10 @@ This project can be run either in Java IDE (Eclipse EE, NetBeans IDE, IntelliJ I
 $ mvn compile
 $ npm install
 $ npm start
-$ cd  <path_to_java_project_folder>\rate-calculator\src\main\java\upiatek\ratecalculator\
+$ cd <path_to_java_project_folder>\rate-calculator\src\main\java\upiatek\ratecalculator\
 $ javac RateCalculatorApplication.java
 $ java RateCalculatorApplication.class
 
 ```
 
-After running RateCalculatorApplication, open up your browser, type and enter in url bar: localhost:8080.
+After running RateCalculatorApplication, open your browser, type and enter in url bar: localhost:8080.
